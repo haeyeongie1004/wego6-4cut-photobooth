@@ -48,7 +48,45 @@ export default function PhotoboothApp(){
   };
   const retake=(index:number)=>{setCut(index);setZoom(1);setOffsetX(0);setOffsetY(0);setScreen("camera");start();};
   const buildStrip=async()=>{const valid=photos.filter((p):p is string=>!!p);if(valid.length!==4)return;const u=await generateStrip(valid,activeMember.name,stripBg,decorations);setStripUrl(u);setScreen("final");};
-  const download=()=>{if(!stripUrl)return;const a=document.createElement("a");a.href=stripUrl;a.download=`${activeMember.id}-four-cut.png`;a.click();};
+  
+const download = async () => {
+  if (!stripUrl) return;
+
+  const isIOS =
+    /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (isIOS) {
+    // iPhone and iPad: open the image for saving to Photos
+    const imageTab = window.open("about:blank", "_blank");
+
+    if (!imageTab) {
+      alert("Please allow pop-ups in Safari and try again.");
+      return;
+    }
+
+    try {
+      const response = await fetch(stripUrl);
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+      imageTab.location.href = imageUrl;
+    } catch {
+      imageTab.close();
+      alert("Could not open your photo. Please try again.");
+    }
+
+    return;
+  }
+
+  // Android and computers: download the PNG normally
+  const a = document.createElement("a");
+  a.href = stripUrl;
+  a.download = `${activeMember.id}-four-cut.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+
   const restart=()=>{stop();setScreen("home");setMember(null);setPhotos([null,null,null,null]);setDecorations([]);setStripUrl("");};
   const addSticker=(emoji:string)=>{const id=Date.now();setDecorations(p=>[...p,{id,emoji,x:80+Math.random()*820,y:80+Math.random()*180,size:42,rotation:(Math.random()-.5)*20}]);setSelectedSticker(id);};
   const updateSticker=(id:number,patch:Partial<Decoration>)=>setDecorations(p=>p.map(d=>d.id===id?{...d,...patch}:d));
