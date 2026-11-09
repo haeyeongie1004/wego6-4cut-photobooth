@@ -12,14 +12,52 @@ export function drawCover(ctx:CanvasRenderingContext2D, source:CanvasImageSource
   else ctx.drawImage(source,cx,cy,rw,rh);
   ctx.restore();
 }
-export async function composeCut(video:HTMLVideoElement, idolSrc:string, background:string, frame:CameraFrame, mirror=true):Promise<string>{
-  const W=900,H=1200, canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
-  const ctx=canvas.getContext("2d");if(!ctx)throw new Error("Canvas is unavailable.");
-  ctx.fillStyle=background;ctx.fillRect(0,0,W,H);
-  const inset=35, cameraBox={x:inset,y:inset,width:W-70,height:H-70};
-  const f={...frame,mirror};
-  drawCover(ctx,video,video.videoWidth,video.videoHeight,cameraBox.x,cameraBox.y,cameraBox.width,cameraBox.height,f);
-  try{const idol=await loadImage(idolSrc);ctx.drawImage(idol,0,0,W,H);}catch{ /* placeholder cutout is intentionally optional until supplied */ }
-  ctx.strokeStyle="#fff";ctx.lineWidth=18;ctx.strokeRect(9,9,W-18,H-18);
+
+export async function composeCut(
+  video: HTMLVideoElement,
+  idolSrc: string,
+  background: string,
+  frame: CameraFrame,
+  mirror = true
+): Promise<string> {
+  const W = 3840;
+  const H = 2160;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas is unavailable.");
+
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, W, H);
+
+  const f = { ...frame, mirror };
+
+  drawCover(
+    ctx,
+    video,
+    video.videoWidth,
+    video.videoHeight,
+    0,
+    0,
+    W,
+    H,
+    f
+  );
+
+  try {
+    const idol = await loadImage(idolSrc);
+    ctx.drawImage(idol, 0, 0, W, H);
+  } catch {
+    // Placeholder cutout is optional until supplied.
+  }
+
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 18;
+  ctx.strokeRect(9, 9, W - 18, H - 18);
+
   return canvas.toDataURL("image/png");
 }
+
