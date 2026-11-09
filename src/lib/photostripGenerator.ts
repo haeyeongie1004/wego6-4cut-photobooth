@@ -75,7 +75,7 @@ export async function generateStrip(
   ctx.font = "40px monospace";
   ctx.fillStyle = "#956b7c";
   ctx.fillText(
-    "IDOL SNAP CLUB  ·  FOUR CUT MEMORY",
+    "WE GO-6 PHOTO STUDIO  ·  FOUR CUT MEMORY",
     W / 2,
     H - footer + 196
   );
