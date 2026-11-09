@@ -52,7 +52,24 @@ const activeStripBg=stripBg??activeMember.color;
     setBusy(false);
   };
   const retake=(index:number)=>{setCut(index);setZoom(1);setOffsetX(0);setOffsetY(0);setScreen("camera");start();};
-  const buildStrip=async()=>{const valid=photos.filter((p):p is string=>!!p);if(valid.length!==4)return;const u=await generateStrip(valid,activeMember.name,activeStripBg,decorations);setStripUrl(u);setScreen("final");};
+  const buildStrip = async () => {
+  const valid = photos.filter((p): p is string => !!p);
+
+  if (valid.length !== 4) return;
+
+  const previewWidth = stripRef.current?.getBoundingClientRect().width ?? 330;
+
+  const u = await generateStrip(
+    valid,
+    activeMember.name,
+    activeStripBg,
+    decorations,
+    previewWidth
+  );
+
+  setStripUrl(u);
+  setScreen("final");
+};
   
 const download = async () => {
   if (!stripUrl) return;
@@ -123,7 +140,12 @@ const download = async () => {
         <p style={{fontSize:10,color:"#a28b94",lineHeight:1.5}}>Tip: Use your phone's front camera and keep your face inside the frame. Preview is mirrored like a selfie.</p>
       </aside></div></section>}
     {screen==="review"&&<section className="content"><div className="eyebrow">STEP 03 / YOUR FOUR-CUT MEMORY</div><h2 style={{font:"bold 42px Playfair Display",margin:"10px 0"}}>Look at you two. ♡</h2><p style={{color:"#907b84",fontSize:13}}>All four moments are saved in this browser tab. Retake only the cut you want to redo.</p><div className="preview-grid">{photos.map((p,i)=><button key={i} className="preview-cut" onClick={()=>retake(i)}>{p?<img src={p} alt={`Captured cut ${i+1}`}/>:<span>EMPTY</span>}<small>RETAKE 0{i+1}</small></button>)}</div><div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap"}}><button className="secondary" onClick={()=>retake(0)}><RefreshCw size={14} style={{verticalAlign:"middle"}}/> RETAKE PHOTO</button><button className="primary" onClick={()=>setScreen("editor")}>DECORATE YOUR STRIP →</button></div></section>}
-    {screen==="editor"&&<section className="content"><div className="toolbar"><div><div className="eyebrow">STEP 04 / LITTLE EXTRAS</div><h2 style={{font:"bold 36px Playfair Display",margin:"8px 0"}}>Make it yours.</h2></div><button className="secondary" onClick={()=>setScreen("review")}><ArrowLeft size={14}/> BACK</button></div><div className="editor-layout"><div className="strip" ref={stripRef} style={{background:activeStripBg}}>{photos.map((p,i)=><div className="strip-cut" key={i}>{p&&<img src={p} alt={`Cut ${i+1}`}/>}</div>)}<div className="strip-footer">{member?.name.toUpperCase()} · WE GO-6 PHOTO STUDIO</div>{decorations.map(d=><span key={d.id} className={`sticker ${selectedSticker===d.id?"selected":""}`} style={{left:`${d.x/10}%`,top:`${d.y/13}%`,fontSize:d.size,transform:`translate(-50%,-50%) rotate(${d.rotation}deg)`}} onClick={()=>setSelectedSticker(d.id)} onPointerDown={e=>onPointerDown(e,d)} onPointerMove={onPointerMove} onPointerUp={()=>dragRef.current=null}>{d.emoji}</span>)}</div>
+    {screen==="editor"&&<section className="content"><div className="toolbar"><div><div className="eyebrow">STEP 04 / LITTLE EXTRAS</div><h2 style={{font:"bold 36px Playfair Display",margin:"8px 0"}}>Make it yours.</h2></div><button className="secondary" onClick={()=>setScreen("review")}><ArrowLeft size={14}/> BACK</button></div><div className="editor-layout"><div className="strip" ref={stripRef} style={{background:activeStripBg}}>{photos.map((p,i)=><div className="strip-cut" key={i}>{p&&<img src={p} alt={`Cut ${i+1}`}/>}</div>)}<div className="strip-footer">{member?.name.toUpperCase()} · WE GO-6 PHOTO STUDIO</div>{decorations.map(d=><span key={d.id} className={`sticker ${selectedSticker===d.id?"selected":""}`} style={{
+  left: `${d.x / 10}%`,
+  top: `${d.y / 13}%`,
+  fontSize: d.size,
+  transform: `translate(-50%, -50%) rotate(${d.rotation}deg)`
+}} onClick={()=>setSelectedSticker(d.id)} onPointerDown={e=>onPointerDown(e,d)} onPointerMove={onPointerMove} onPointerUp={()=>dragRef.current=null}>{d.emoji}</span>)}</div>
       <aside className="camera-panel"><div className="panel-title">PAPER & PRETTY THINGS</div><label className="eyebrow">STRIP BACKGROUND</label><div className="sticker-tools" style={{margin:"10px 0 20px"}}>{members.map(m=>m.color).map(c=><button key={c} aria-label={`Background ${c}`} onClick={()=>setStripBg(c)} style={{width:32,height:32,borderRadius:"50%",background:c,border:"1px solid #ddc5ce"}}/>)}</div><label className="eyebrow">ADD STICKERS</label><div className="sticker-tools" style={{margin:"10px 0 20px"}}>{[...new Set([...marks,...(member?.stickers??[])])].map(s=><button className="sticker-btn" key={s} onClick={()=>addSticker(s)}>{s}</button>)}</div>{activeSticker&&<><div className="control"><label><span>STICKER SIZE</span><span>{activeSticker.size}px</span></label><input type="range" min="18" max="90" value={activeSticker.size} onChange={e=>updateSticker(activeSticker.id,{size:Number(e.target.value)})}/></div><div className="control"><label><span>ROTATION</span><span>{activeSticker.rotation}°</span></label><input type="range" min="-45" max="45" value={activeSticker.rotation} onChange={e=>updateSticker(activeSticker.id,{rotation:Number(e.target.value)})}/></div><button className="secondary" onClick={()=>{setDecorations(p=>p.filter(d=>d.id!==activeSticker.id));setSelectedSticker(null)}}><Trash2 size={13}/> DELETE SELECTED</button></>}<button className="secondary" style={{width:"100%",marginTop:14}} onClick={()=>{setDecorations([]);setSelectedSticker(null)}}>RESET DECORATIONS</button><button className="big-capture" onClick={buildStrip}>PREVIEW FINAL STRIP →</button></aside></div></section>}
     {screen==="final"&&<section className="content"><div className="eyebrow">STEP 05 / KEEP THIS FOREVER</div><h2 style={{font:"bold 42px Playfair Display",margin:"10px 0"}}>Your photo is ready. ♡</h2><p style={{color:"#907b84",fontSize:13}}>A little proof that you virtually met your idols. Download the full-resolution PNG.</p><div style={{display:"flex",justifyContent:"center",margin:"28px 0"}}>{stripUrl&&<img src={stripUrl} alt="Final four cut photostrip" style={{width:"min(100%,360px)",boxShadow:"0 12px 35px #4a273522"}}/>}</div><div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap"}}><button className="primary" onClick={download}><Download size={15} style={{verticalAlign:"middle"}}/> DOWNLOAD PHOTO STRIP</button><button className="secondary" onClick={()=>{setScreen("camera");retake(0)}}><RefreshCw size={14} style={{verticalAlign:"middle"}}/> RETAKE PHOTO</button><button className="secondary" onClick={restart}>START AGAIN</button></div></section>}
     <footer className="footer"><span>© 2026 WE GO-6 PHOTO STUDIO · FAN-MADE PHOTOBOOTH</span><span>MADE WITH ♡, SAVED LOCALLY</span></footer>
