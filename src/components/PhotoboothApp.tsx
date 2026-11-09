@@ -159,6 +159,25 @@ const download = async () => {
 }} onClick={()=>setSelectedSticker(d.id)} onPointerDown={e=>onPointerDown(e,d)} onPointerMove={onPointerMove} onPointerUp={()=>dragRef.current=null}>{d.emoji}</span>)}</div>
       <aside className="camera-panel"><div className="panel-title">PAPER & PRETTY THINGS</div><label className="eyebrow">STRIP BACKGROUND</label><div className="sticker-tools" style={{margin:"10px 0 20px"}}>{members.map(m=>m.color).map(c=><button key={c} aria-label={`Background ${c}`} onClick={()=>setStripBg(c)} style={{width:32,height:32,borderRadius:"50%",background:c,border:"1px solid #ddc5ce"}}/>)}</div><label className="eyebrow">ADD STICKERS</label><div className="sticker-tools" style={{margin:"10px 0 20px"}}>{[...new Set([...marks,...(member?.stickers??[])])].map(s=><button className="sticker-btn" key={s} onClick={()=>addSticker(s)}>{s}</button>)}</div>{activeSticker&&<><div className="control"><label><span>STICKER SIZE</span><span>{activeSticker.size}px</span></label><input type="range" min="18" max="90" value={activeSticker.size} onChange={e=>updateSticker(activeSticker.id,{size:Number(e.target.value)})}/></div><div className="control"><label><span>ROTATION</span><span>{activeSticker.rotation}°</span></label><input type="range" min="-45" max="45" value={activeSticker.rotation} onChange={e=>updateSticker(activeSticker.id,{rotation:Number(e.target.value)})}/></div><button className="secondary" onClick={()=>{setDecorations(p=>p.filter(d=>d.id!==activeSticker.id));setSelectedSticker(null)}}><Trash2 size={13}/> DELETE SELECTED</button></>}<button className="secondary" style={{width:"100%",marginTop:14}} onClick={()=>{setDecorations([]);setSelectedSticker(null)}}>RESET DECORATIONS</button><button className="big-capture" onClick={buildStrip}>PREVIEW FINAL STRIP →</button></aside></div></section>}
     {screen==="final"&&<section className="content"><div className="eyebrow">STEP 05 / KEEP THIS FOREVER</div><h2 style={{font:"bold 42px Playfair Display",margin:"10px 0"}}>Your photo is ready. ♡</h2><p style={{color:"#907b84",fontSize:13}}>A little proof that you virtually met your idols. Download the full-resolution PNG.</p><div style={{display:"flex",justifyContent:"center",margin:"28px 0"}}>{stripUrl&&<img src={stripUrl} alt="Final four cut photostrip" style={{width:"min(100%,360px)",boxShadow:"0 12px 35px #4a273522"}}/>}</div><div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap"}}><button className="primary" onClick={download}><Download size={15} style={{verticalAlign:"middle"}}/> DOWNLOAD PHOTO STRIP</button><button className="secondary" onClick={()=>{setScreen("camera");retake(0)}}><RefreshCw size={14} style={{verticalAlign:"middle"}}/> RETAKE PHOTO</button><button className="secondary" onClick={restart}>START AGAIN</button></div></section>}
-    <footer className="footer"><span>© 2026 WE GO-6 PHOTO STUDIO · FAN-MADE PHOTOBOOTH</span><span>MADE WITH ♡, SAVED LOCALLY</span></footer>
+    
+<footer className="footer">
+  <span>© 2026 WE GO-6 PHOTO STUDIO · FAN-MADE PHOTOBOOTH</span>
+  <span>MADE WITH ♡, SAVED LOCALLY</span>
+  <p style={{
+    fontSize: "10px",
+    lineHeight: 1.7,
+    maxWidth: "650px",
+    margin: "12px auto 0",
+    textAlign: "center",
+    opacity: 0.8
+  }}>
+    Unofficial fan-made photobooth for personal entertainment only.
+    All images, names, logos and related materials belong to their
+    respective owners. I do not claim ownership of any original
+    materials featured here. No copyright infringement intended.
+    Not affiliated with or endorsed by Wego6 or its management.
+  </p>
+</footer>
+
   </main></div>;
 }
