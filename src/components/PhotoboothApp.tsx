@@ -175,7 +175,7 @@ const download = async () => {
     All images, names, logos and related materials belong to their
     respective owners. I do not claim ownership of any original
     materials featured here. No copyright infringement intended.
-    Not affiliated with or endorsed by Wego6 or its management.
+    Not affiliated with or endorsed by We Go-6 or its management.
   </p>
 </footer>
 
