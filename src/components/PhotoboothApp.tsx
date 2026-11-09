@@ -8,7 +8,12 @@ import { generateStrip } from "@/lib/photostripGenerator";
 import type { Decoration, Member } from "@/types/photobooth";
 
 type Screen="home"|"members"|"camera"|"review"|"editor"|"final";
-const marks=["♡","✦","★","🍙","✿","😈","🍊","🍍","🪽","✧"];
+const marks=[
+  "♡","♥","ღ","❥","✦","✧","★","☆",
+  "🎀","🫧","🦋","🌷","🌸","🌼","🍒","🍓",
+  "🍙","😈","🍊","🍍","🪽","☁️","🌙","✨",
+  "💗","💖","💞","⭐","☀️","🐰","🐻","🐱"
+];
 export default function PhotoboothApp(){
   const [screen,setScreen]=useState<Screen>("home");
   const [member,setMember]=useState<Member|null>(null);
