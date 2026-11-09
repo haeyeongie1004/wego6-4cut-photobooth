@@ -121,7 +121,13 @@ const download = async () => {
     <header className="topbar"><button className="brand" onClick={()=>screen!=="home"?goBack():null}>WE GO-6 <span>PHOTO</span> STUDIO</button><span>♡ A FANMADE FOUR CUT PHOTOBOOTH ♡</span><span>EST. 2026</span></header>
     {screen==="home"&&<section className="content hero">
       <div><div className="eyebrow">WE GO-6 FOREST STUDIO ✦</div><h1>Four cuts.<br/><i>We Go</i> -6.</h1><p>Take pictures with the We Go-6 members. A tiny photo date, just for you and your idols.</p><button className="primary" onClick={()=>setScreen("members")}>START PHOTOBOOTH <span>↗</span></button><div style={{marginTop:30,font:"10px DM Mono",color:"#b08c9b",letterSpacing:".12em"}}>✦ NO LOGIN · NO UPLOADS · JUST MEMORIES ✦</div></div>
-      <div className="hero-art"><div className="tape"/><div className="art-inner"><div className="art-tile">🍙</div><div className="art-tile">🍊🍍</div><div className="art-tile">🪽</div><div className="art-tile">😈</div><div className="art-label" style={{gridColumn:"span 2"}}>WE GO-6 PHOTO STUDIO · PHOTO MEMORY 001</div></div></div>
+      <div className="hero-art">
+  <img
+    src="/wego6-welcome.png"
+    alt="Wego6 members"
+    className="welcome-photo"
+  />
+</div>
     </section>}
     {screen==="members"&&<section className="content"><div className="toolbar"><div><div className="eyebrow">STEP 01 / PICK YOUR PERSON</div><h2 style={{font:"bold 38px Playfair Display",margin:"9px 0"}}>Choose member.</h2></div><button className="secondary" onClick={goBack}><ArrowLeft size={14} style={{verticalAlign:"middle"}}/> BACK</button></div><p style={{color:"#907b84",fontSize:13}}>Five angels, five little wolves. Who's joining your photo date?</p><div className="member-grid">{members.map((m,i)=><button key={m.id} className="member-card" style={{"--accent":m.color} as React.CSSProperties} onClick={()=>beginMember(m)}><div className="avatar" style={{background:m.color}}><span>{["🍙","😈","🍊","🍍","🪽"][i]}</span></div><div className="member-name">{m.name.toUpperCase()}</div><div className="member-sub">SELECT MEMBER ↗</div></button>)}</div></section>}
     {screen==="camera"&&member&&<section className="content"><div className="toolbar"><div><div className="eyebrow">STEP 02 / THE PHOTO DATE</div><h2 style={{font:"bold 32px Playfair Display",margin:"8px 0"}}>{member.name} <i>× you</i></h2></div><button className="secondary" onClick={()=>{stop();setScreen("members")}}><ArrowLeft size={14} style={{verticalAlign:"middle"}}/> EXIT</button></div><div className="progress">{[0,1,2,3].map(i=><span key={i} className={i<=cut?"done":""}/>)}</div><div style={{display:"flex",justifyContent:"space-between",font:"11px DM Mono",marginBottom:15,color:"#9a7888"}}><span>PHOTO 0{cut+1} / 04</span><span>{completed} SAVED</span></div>
