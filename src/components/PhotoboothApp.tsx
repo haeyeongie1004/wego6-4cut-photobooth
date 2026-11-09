@@ -125,7 +125,7 @@ const download = async () => {
   return <div className="shell"><main className="app">
     <header className="topbar"><button className="brand" onClick={()=>screen!=="home"?goBack():null}>WE GO-6 <span>PHOTO</span> STUDIO</button><span>♡ A FANMADE FOUR CUT PHOTOBOOTH ♡</span><span>EST. 2026</span></header>
     {screen==="home"&&<section className="content hero">
-      <div><div className="eyebrow">WE GO-6 FOREST STUDIO ✦</div><h1>Four cuts.<br/><i>We Go</i> -6.</h1><p>Take pictures with the We Go-6 members. A tiny photo date, just for you and your idols.</p><button className="primary" onClick={()=>setScreen("members")}>START PHOTOBOOTH <span>↗</span></button><div style={{marginTop:30,font:"10px DM Mono",color:"#b08c9b",letterSpacing:".12em"}}>✦ NO LOGIN · NO UPLOADS · JUST MEMORIES ✦</div></div>
+      <div><div className="eyebrow">WE GO-6 FOREST STUDIO ✦</div><h1>Four cuts.<br/><i>We Go</i> -6.</h1><p>Take pictures with the We Go-6 members. A tiny photo date, just for you and your multi-persona idols.</p><button className="primary" onClick={()=>setScreen("members")}>START PHOTOBOOTH <span>↗</span></button><div style={{marginTop:30,font:"10px DM Mono",color:"#b08c9b",letterSpacing:".12em"}}>✦ NO LOGIN · NO UPLOADS · JUST MEMORIES ✦</div></div>
       <div className="hero-art">
   <img
     src="/wego6-welcome.png"
