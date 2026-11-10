@@ -167,8 +167,8 @@ const onStickerPointerMove = (e: React.PointerEvent<HTMLElement>) => {
     const dx = e.clientX - gesture.startX;
     const dy = e.clientY - gesture.startY;
 
-    gestureRef.current.startX = e.clientX;
-    gestureRef.current.startY = e.clientY;
+    gesture.startX = e.clientX;
+    gesture.startY = e.clientY;
 
     updateSticker(d.id, {
       x: Math.max(0, Math.min(1000, d.x + dx / rect.width * 1000)),
