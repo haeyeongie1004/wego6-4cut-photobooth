@@ -441,6 +441,7 @@ input[type=range]{
   position:absolute;
   width:19px;
   height:19px;
+  padding:0;
   border:2px solid #EAF3F3;
   border-radius:50%;
   background:#206B85;
