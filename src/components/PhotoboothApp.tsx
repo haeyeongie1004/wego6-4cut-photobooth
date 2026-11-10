@@ -29,7 +29,16 @@ export default function PhotoboothApp(){
   const [stripUrl,setStripUrl]=useState("");
   const [stripBg,setStripBg]=useState<string | null>(null);
   const {videoRef,ready,error,start,stop}=useCamera();
-  const dragRef=useRef<{id:number; x:number;y:number}|null>(null);
+  const gestureRef = useRef<{
+  id: number;
+  mode: "move" | "resize" | "rotate";
+  startX: number;
+  startY: number;
+  startSize: number;
+  startRotation: number;
+  startDistance: number;
+  startAngle: number;
+} | null>(null);
   const activeMember=member??members[0];
 const current=activeMember.cuts[cut];
 const completed=photos.filter(Boolean).length;
@@ -118,8 +127,82 @@ const download = async () => {
   const addSticker=(emoji:string)=>{const id=Date.now();setDecorations(p=>[...p,{id,emoji,x:80+Math.random()*820,y:80+Math.random()*180,size:42,rotation:(Math.random()-.5)*20}]);setSelectedSticker(id);};
   const updateSticker=(id:number,patch:Partial<Decoration>)=>setDecorations(p=>p.map(d=>d.id===id?{...d,...patch}:d));
   const stripRef=useRef<HTMLDivElement>(null);
-  const onPointerDown=(e:React.PointerEvent<HTMLSpanElement>,d:Decoration)=>{e.currentTarget.setPointerCapture(e.pointerId);dragRef.current={id:d.id,x:e.clientX,y:e.clientY};};
-  const onPointerMove=(e:React.PointerEvent<HTMLSpanElement>)=>{if(!dragRef.current||!stripRef.current)return;const rect=stripRef.current.getBoundingClientRect();const dx=e.clientX-dragRef.current.x,dy=e.clientY-dragRef.current.y;dragRef.current.x=e.clientX;dragRef.current.y=e.clientY;const d=decorations.find(x=>x.id===dragRef.current?.id);if(d)updateSticker(d.id,{x:d.x+dx/rect.width*1000,y:d.y+dy/rect.height*1300});};
+  const startStickerGesture = (
+  e: React.PointerEvent<HTMLElement>,
+  d: Decoration,
+  mode: "move" | "resize" | "rotate"
+) => {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.setPointerCapture(e.pointerId);
+  setSelectedSticker(d.id);
+
+  const rect = stripRef.current?.getBoundingClientRect();
+  if (!rect) return;
+
+  const centerX = rect.left + (d.x / 1000) * rect.width;
+  const centerY = rect.top + (d.y / 1300) * rect.height;
+
+  gestureRef.current = {
+    id: d.id,
+    mode,
+    startX: e.clientX,
+    startY: e.clientY,
+    startSize: d.size,
+    startRotation: d.rotation,
+    startDistance: Math.hypot(e.clientX - centerX, e.clientY - centerY),
+    startAngle: Math.atan2(e.clientY - centerY, e.clientX - centerX)
+  };
+};
+
+const onStickerPointerMove = (e: React.PointerEvent<HTMLElement>) => {
+  const gesture = gestureRef.current;
+  const rect = stripRef.current?.getBoundingClientRect();
+  if (!gesture || !rect) return;
+
+  const d = decorations.find(item => item.id === gesture.id);
+  if (!d) return;
+
+  if (gesture.mode === "move") {
+    const dx = e.clientX - gesture.startX;
+    const dy = e.clientY - gesture.startY;
+
+    gestureRef.current.startX = e.clientX;
+    gestureRef.current.startY = e.clientY;
+
+    updateSticker(d.id, {
+      x: Math.max(0, Math.min(1000, d.x + dx / rect.width * 1000)),
+      y: Math.max(0, Math.min(1300, d.y + dy / rect.height * 1300))
+    });
+  }
+
+  if (gesture.mode === "resize") {
+    const centerX = rect.left + (d.x / 1000) * rect.width;
+    const centerY = rect.top + (d.y / 1300) * rect.height;
+    const distance = Math.hypot(e.clientX - centerX, e.clientY - centerY);
+
+    updateSticker(d.id, {
+      size: Math.max(18, Math.min(90,
+        gesture.startSize + distance - gesture.startDistance
+      ))
+    });
+  }
+
+  if (gesture.mode === "rotate") {
+    const centerX = rect.left + (d.x / 1000) * rect.width;
+    const centerY = rect.top + (d.y / 1300) * rect.height;
+    const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+    const difference = (angle - gesture.startAngle) * 180 / Math.PI;
+
+    updateSticker(d.id, {
+      rotation: gesture.startRotation + difference
+    });
+  }
+};
+
+const onStickerPointerUp = () => {
+  gestureRef.current = null;
+};
   const activeSticker=decorations.find(d=>d.id===selectedSticker);
 
   return <div className="shell"><main className="app">
@@ -151,13 +234,65 @@ const download = async () => {
         <p style={{fontSize:10,color:"#a28b94",lineHeight:1.5}}>Tip: Use your phone's front camera and keep your face inside the frame. Preview is mirrored like a selfie.</p>
       </aside></div></section>}
     {screen==="review"&&<section className="content"><div className="eyebrow">STEP 03 / YOUR FOUR-CUT MEMORY</div><h2 style={{font:"bold 42px Playfair Display",margin:"10px 0"}}>Look at you two. ♡</h2><p style={{color:"#907b84",fontSize:13}}>All four moments are saved in this browser tab. Retake only the cut you want to redo.</p><div className="preview-grid">{photos.map((p,i)=><button key={i} className="preview-cut" onClick={()=>retake(i)}>{p?<img src={p} alt={`Captured cut ${i+1}`}/>:<span>EMPTY</span>}<small>RETAKE 0{i+1}</small></button>)}</div><div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap"}}><button className="secondary" onClick={()=>retake(0)}><RefreshCw size={14} style={{verticalAlign:"middle"}}/> RETAKE PHOTO</button><button className="primary" onClick={()=>setScreen("editor")}>DECORATE YOUR STRIP →</button></div></section>}
-    {screen==="editor"&&<section className="content"><div className="toolbar"><div><div className="eyebrow">STEP 04 / LITTLE EXTRAS</div><h2 style={{font:"bold 36px Playfair Display",margin:"8px 0"}}>Make it yours.</h2></div><button className="secondary" onClick={()=>setScreen("review")}><ArrowLeft size={14}/> BACK</button></div><div className="editor-layout"><div className="strip" ref={stripRef} style={{background:activeStripBg}}>{photos.map((p,i)=><div className="strip-cut" key={i}>{p&&<img src={p} alt={`Cut ${i+1}`}/>}</div>)}<div className="strip-footer">{member?.name.toUpperCase()} · WE GO-6 PHOTO STUDIO</div>{decorations.map(d=><span key={d.id} className={`sticker ${selectedSticker===d.id?"selected":""}`} style={{
-  left: `${d.x / 10}%`,
-  top: `${d.y / 13}%`,
-  fontSize: d.size,
-  transform: `translate(-50%, -50%) rotate(${d.rotation}deg)`
-}} onClick={()=>setSelectedSticker(d.id)} onPointerDown={e=>onPointerDown(e,d)} onPointerMove={onPointerMove} onPointerUp={()=>dragRef.current=null}>{d.emoji}</span>)}</div>
-      <aside className="camera-panel"><div className="panel-title">PAPER & PRETTY THINGS</div><label className="eyebrow">STRIP BACKGROUND</label><div className="sticker-tools" style={{margin:"10px 0 20px"}}>{members.map(m=>m.color).map(c=><button key={c} aria-label={`Background ${c}`} onClick={()=>setStripBg(c)} style={{width:32,height:32,borderRadius:"50%",background:c,border:"1px solid #ddc5ce"}}/>)}</div><label className="eyebrow">ADD STICKERS</label><div className="sticker-tools" style={{margin:"10px 0 20px"}}>{[...new Set([...marks,...(member?.stickers??[])])].map(s=><button className="sticker-btn" key={s} onClick={()=>addSticker(s)}>{s}</button>)}</div>{activeSticker&&<><div className="control"><label><span>STICKER SIZE</span><span>{activeSticker.size}px</span></label><input type="range" min="18" max="90" value={activeSticker.size} onChange={e=>updateSticker(activeSticker.id,{size:Number(e.target.value)})}/></div><div className="control"><label><span>ROTATION</span><span>{activeSticker.rotation}°</span></label><input type="range" min="-45" max="45" value={activeSticker.rotation} onChange={e=>updateSticker(activeSticker.id,{rotation:Number(e.target.value)})}/></div><button className="secondary" onClick={()=>{setDecorations(p=>p.filter(d=>d.id!==activeSticker.id));setSelectedSticker(null)}}><Trash2 size={13}/> DELETE SELECTED</button></>}<button className="secondary" style={{width:"100%",marginTop:14}} onClick={()=>{setDecorations([]);setSelectedSticker(null)}}>RESET DECORATIONS</button><button className="big-capture" onClick={buildStrip}>PREVIEW FINAL STRIP →</button></aside></div></section>}
+    {screen==="editor"&&<section className="content"><div className="toolbar"><div><div className="eyebrow">STEP 04 / LITTLE EXTRAS</div><h2 style={{font:"bold 36px Playfair Display",margin:"8px 0"}}>Make it yours.</h2></div><button className="secondary" onClick={()=>setScreen("review")}><ArrowLeft size={14}/> BACK</button></div><div className="editor-layout"><div className="strip" ref={stripRef} style={{background:activeStripBg}}>{photos.map((p,i)=><div className="strip-cut" key={i}>{p&&<img src={p} alt={`Cut ${i+1}`}/>}</div>)}<div className="strip-footer">{member?.name.toUpperCase()} · WE GO-6 PHOTO STUDIO</div>{decorations.map(d => (
+  <div
+    key={d.id}
+    className="sticker-wrap"
+    style={{
+      left: `${d.x / 10}%`,
+      top: `${d.y / 13}%`
+    }}
+  >
+    <span
+      className={`sticker-visual ${selectedSticker === d.id ? "selected" : ""}`}
+      style={{
+        fontSize: d.size,
+        transform: `rotate(${d.rotation}deg)`
+      }}
+      onPointerDown={e => startStickerGesture(e, d, "move")}
+      onPointerMove={onStickerPointerMove}
+      onPointerUp={onStickerPointerUp}
+      onPointerCancel={onStickerPointerUp}
+    >
+      {d.emoji}
+    </span>
+
+    {selectedSticker === d.id && (
+      <>
+        <button
+          type="button"
+          className="sticker-handle sticker-rotate"
+          aria-label="Rotate sticker"
+          onPointerDown={e => startStickerGesture(e, d, "rotate")}
+          onPointerMove={onStickerPointerMove}
+          onPointerUp={onStickerPointerUp}
+          onPointerCancel={onStickerPointerUp}
+        />
+
+        <button
+          type="button"
+          className="sticker-handle sticker-resize"
+          aria-label="Resize sticker"
+          onPointerDown={e => startStickerGesture(e, d, "resize")}
+          onPointerMove={onStickerPointerMove}
+          onPointerUp={onStickerPointerUp}
+          onPointerCancel={onStickerPointerUp}
+        />
+      </>
+    )}
+  </div>
+))}</div>
+      <aside className="camera-panel"><div className="panel-title">PAPER & PRETTY THINGS</div><label className="eyebrow">STRIP BACKGROUND</label><div className="sticker-tools" style={{margin:"10px 0 20px"}}>{members.map(m=>m.color).map(c=><button key={c} aria-label={`Background ${c}`} onClick={()=>setStripBg(c)} style={{width:32,height:32,borderRadius:"50%",background:c,border:"1px solid #ddc5ce"}}/>)}</div><label className="eyebrow">ADD STICKERS</label><div className="sticker-tools" style={{margin:"10px 0 20px"}}>{[...new Set([...marks,...(member?.stickers??[])])].map(s=><button className="sticker-btn" key={s} onClick={()=>addSticker(s)}>{s}</button>)}</div>{activeSticker&&<>
+  <button
+    className="secondary"
+    onClick={()=>{
+      setDecorations(p=>p.filter(d=>d.id!==activeSticker.id));
+      setSelectedSticker(null);
+    }}
+  >
+    <Trash2 size={13}/> DELETE SELECTED
+  </button>
+</>}<button className="secondary" style={{width:"100%",marginTop:14}} onClick={()=>{setDecorations([]);setSelectedSticker(null)}}>RESET DECORATIONS</button><button className="big-capture" onClick={buildStrip}>PREVIEW FINAL STRIP →</button></aside></div></section>}
     {screen==="final"&&<section className="content"><div className="eyebrow">STEP 05 / KEEP THIS FOREVER</div><h2 style={{font:"bold 42px Playfair Display",margin:"10px 0"}}>Your photo is ready. ♡</h2><p style={{color:"#907b84",fontSize:13}}>A little proof that you virtually met your idols. Download the full-resolution PNG.</p><div style={{display:"flex",justifyContent:"center",margin:"28px 0"}}>{stripUrl&&<img src={stripUrl} alt="Final four cut photostrip" style={{width:"min(100%,360px)",boxShadow:"0 12px 35px #4a273522"}}/>}</div><div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap"}}><button className="primary" onClick={download}><Download size={15} style={{verticalAlign:"middle"}}/> DOWNLOAD PHOTO STRIP</button><button className="secondary" onClick={()=>{setScreen("camera");retake(0)}}><RefreshCw size={14} style={{verticalAlign:"middle"}}/> RETAKE PHOTO</button><button className="secondary" onClick={restart}>START AGAIN</button></div></section>}
     
 <footer className="footer">
