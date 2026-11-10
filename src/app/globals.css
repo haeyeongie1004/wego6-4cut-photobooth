@@ -417,18 +417,57 @@ input[type=range]{
   color:#B0C9C8
 }
 
-.sticker{
+.sticker-wrap{
   position:absolute;
   z-index:4;
   touch-action:none;
   user-select:none;
-  font-size:30px;
-  cursor:grab
+  transform:translate(-50%,-50%);
 }
 
-.sticker.selected{
+.sticker-visual{
+  display:block;
+  cursor:grab;
+  line-height:1;
+  transform-origin:center;
+}
+
+.sticker-visual.selected{
   outline:1px dashed #5593A2;
-  outline-offset:4px
+  outline-offset:5px;
+}
+
+.sticker-handle{
+  position:absolute;
+  width:19px;
+  height:19px;
+  border:2px solid #EAF3F3;
+  border-radius:50%;
+  background:#206B85;
+  box-shadow:0 2px 6px #0008;
+  z-index:6;
+  touch-action:none;
+}
+
+.sticker-rotate{
+  top:-29px;
+  left:50%;
+  transform:translateX(-50%);
+  cursor:grab;
+}
+
+.sticker-resize{
+  right:-12px;
+  bottom:-12px;
+  cursor:nwse-resize;
+}
+
+.sticker-handle::after{
+  content:"";
+  position:absolute;
+  inset:5px;
+  border-radius:50%;
+  background:#EAF3F3;
 }
 
 .sticker-tools{
